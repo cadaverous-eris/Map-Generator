@@ -123,7 +123,9 @@ public class Map extends JPanel {
 		boolean turn = false;
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
 			map[y][x] = WATER;
-			if ((xSign && x < gridWidth*0.6) || (!xSign && x > gridWidth*0.4)) {turn = true;}
+			if ((xSign && x < gridWidth * 0.6) || (!xSign && x > gridWidth * 0.4)) {
+				turn = true;
+			}
 			if (Math.random() < 0.6) {
 				y += (ySign) ? -1 : 1;
 			} else {
@@ -173,8 +175,8 @@ public class Map extends JPanel {
 			}
 		}
 	}
-	
-	//generates forests
+
+	// generates forests
 	private void genForests() {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
@@ -184,33 +186,33 @@ public class Map extends JPanel {
 			}
 		}
 	}
-	
-	//spreads forests
+
+	// spreads forests
 	private void growForest(int x, int y, int i) {
 		map[y][x] = FOREST;
 		if (y > 0) {
-			if (map[y - 1][x] == PLAINS && Math.random() < i*0.75) {
-				growForest(x, y - 1, i-1);
+			if (map[y - 1][x] == PLAINS && Math.random() < i * 0.75) {
+				growForest(x, y - 1, i - 1);
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] == PLAINS && Math.random() < i*0.75) {
-				growForest(x - 1, y, i-1);
+			if (map[y][x - 1] == PLAINS && Math.random() < i * 0.75) {
+				growForest(x - 1, y, i - 1);
 			}
 		}
 		if (y < gridHeight - 1) {
-			if (map[y + 1][x] == PLAINS && Math.random() < i*0.75) {
-				growForest(x, y + 1, i-1);
+			if (map[y + 1][x] == PLAINS && Math.random() < i * 0.75) {
+				growForest(x, y + 1, i - 1);
 			}
 		}
 		if (x < gridWidth - 1) {
-			if (map[y][x + 1] == PLAINS && Math.random() < i*0.75) {
-				growForest(x + 1, y, i-1);
+			if (map[y][x + 1] == PLAINS && Math.random() < i * 0.75) {
+				growForest(x + 1, y, i - 1);
 			}
 		}
 	}
-	
-	//generate patches of montain
+
+	// generate patches of montain
 	public void genRocks() {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
@@ -220,43 +222,44 @@ public class Map extends JPanel {
 			}
 		}
 	}
-	
-	//generates lakes
+
+	// generates lakes
 	private void genLakes() {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
-				if (((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 0.01) || map[y][x] == DESERT && Math.random() < 0.005) {
+				if (((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 0.01)
+						|| map[y][x] == DESERT && Math.random() < 0.005) {
 					placeLake(x, y, (int) (Math.random() * 4) + 1);
 				}
 			}
 		}
 	}
-	
-	//places a lake
-		private void placeLake(int x, int y, int i) {
-			map[y][x] = WATER;
-			if (y > 0) {
-				if (map[y-1][x] != MOUNTAIN && map[y-1][x] != WATER && Math.random() < i*0.75) {
-					placeLake(x, y - 1, i-1);
-				}
-			}
-			if (x > 0) {
-				if (map[y][x-1] != MOUNTAIN && map[y][x-1] != WATER && Math.random() < i*0.75) {
-					placeLake(x - 1, y, i-1);
-				}
-			}
-			if (y < gridHeight - 1) {
-				if (map[y+1][x] != MOUNTAIN && map[y+1][x] != WATER && Math.random() < i*0.75) {
-					placeLake(x, y + 1, i-1);
-				}
-			}
-			if (x < gridWidth - 1) {
-				if (map[y][x+1] != MOUNTAIN && map[y][x+1] != WATER && Math.random() < i*0.75) {
-					placeLake(x + 1, y, i-1);
-				}
+
+	// places a lake
+	private void placeLake(int x, int y, int i) {
+		map[y][x] = WATER;
+		if (y > 0) {
+			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != WATER && Math.random() < i * 0.75) {
+				placeLake(x, y - 1, i - 1);
 			}
 		}
-	
+		if (x > 0) {
+			if (map[y][x - 1] != MOUNTAIN && map[y][x - 1] != WATER && Math.random() < i * 0.75) {
+				placeLake(x - 1, y, i - 1);
+			}
+		}
+		if (y < gridHeight - 1) {
+			if (map[y + 1][x] != MOUNTAIN && map[y + 1][x] != WATER && Math.random() < i * 0.75) {
+				placeLake(x, y + 1, i - 1);
+			}
+		}
+		if (x < gridWidth - 1) {
+			if (map[y][x + 1] != MOUNTAIN && map[y][x + 1] != WATER && Math.random() < i * 0.75) {
+				placeLake(x + 1, y, i - 1);
+			}
+		}
+	}
+
 	// renders the map
 	public void draw(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
