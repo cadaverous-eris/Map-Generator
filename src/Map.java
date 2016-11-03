@@ -60,12 +60,17 @@ public class Map extends JPanel {
 
 	// generates mountain range, taking a side of the map to start the range on
 	private void genMountains(int side, boolean sign) {
+		// distance from the nearest side of the map on the x axis
 		int xOffset = (int) ((Math.random() * 0.15 * gridWidth) + (0.25 * gridWidth));
+		// x and y positions of the origin of the mountain range
 		int x = (sign) ? gridWidth - (xOffset + 1) : xOffset;
 		int y = (side == 0) ? 0 : gridHeight - 1;
+		// # of times the loop has run
 		int i = 0;
+		// generates mountains until it reaches an edge of the map
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
 			map[y][x] = MOUNTAIN;
+			// chance to place mountains around the currently selected tile
 			if (x < gridWidth - 1 && Math.random() < 0.7) {
 				map[y][x + 1] = MOUNTAIN;
 			}
@@ -78,18 +83,24 @@ public class Map extends JPanel {
 			if (y > 0 && Math.random() < 0.7) {
 				map[y - 1][x] = MOUNTAIN;
 			}
+			// gives a high probability for the mountain range to go
+			// north/south, which decreases over time
 			if (Math.random() < Math.pow(0.9, i / 2)) {
 				if (side == 0) {
 					y += 1;
 				} else {
 					y -= 1;
 				}
+				// gives a high probability for the mountain range to go east,
+				// which decreases over time
 			} else if (Math.random() < 1 - Math.pow(0.2, i)) {
 				if (sign) {
 					x += 1;
 				} else {
 					x -= 1;
 				}
+				// a small, but increasing chance for the mountain range to go
+				// back toward the closest side on the x axis to it's origin
 			} else {
 				if (!sign) {
 					x += 1;
@@ -103,31 +114,53 @@ public class Map extends JPanel {
 
 	// generates river
 	private void genRiver(boolean sign) {
+		// the x and y positions of the start of the river
 		int x;
 		int y;
+		// 30% chance for river to start at the top or bottom of the map
 		if (Math.random() < 0.3) {
+			// equal chances of the river starting at thetop or bottom
 			if (Math.random() < 0.5) {
 				y = 0;
 			} else {
 				y = gridHeight - 1;
 			}
+			// makes the river start near the corner of the map
 			int xOffset = (int) (Math.random() * 0.4 * gridWidth);
+			// sets the initial x based on where the mountains are
 			x = (sign) ? xOffset : gridWidth - (xOffset + 1);
+			// 70% chance for river to start on the side of the map opposite the
+			// mountain range
 		} else {
+			// sets initial x to the side of the map opposite the mountain range
 			x = (sign) ? 0 : gridWidth - 1;
+			// sets the initial y near one of the corners of the map
 			int yOffset = (int) (Math.random() * 0.3 * gridWidth);
 			y = (Math.random() < 0.5) ? yOffset : gridHeight - (yOffset + 1);
 		}
+		// the location of the river origin on the x axis. true is on the east,
+		// false is on the west
 		boolean xSign = x > gridWidth / 2;
+		// the location of the river origin on the y axis. true is on the south,
+		// false is on the north
 		boolean ySign = y > gridHeight / 2;
+		// whether or not the river has reached a point near the center of the
+		// map, used to make the river curve away from the mountain range
 		boolean turn = false;
+		// generates the river by changing the current x and y positions and
+		// setting them to be water. the river tends to move more north/south,
+		// and has a curve
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
 			map[y][x] = WATER;
+			// makes the river curve away from the mountain range
 			if ((xSign && x < gridWidth * 0.6) || (!xSign && x > gridWidth * 0.4)) {
 				turn = true;
 			}
+			// 60% chance to make the river go north/south
 			if (Math.random() < 0.6) {
 				y += (ySign) ? -1 : 1;
+				// 40% chance to make the river go east/west, reversing
+				// direction if turn is true
 			} else {
 				x += (xSign == turn) ? 1 : -1;
 			}
@@ -136,15 +169,21 @@ public class Map extends JPanel {
 
 	// generates the desert next to the mountains
 	private void genDesert(int side, boolean sign) {
+		// checks if the mountain range starts on the northern edge of the map
 		if (side == 0) {
+			// starts the desert on the northeast corner of the map
 			if (sign) {
 				desertify(gridWidth - 1, 0);
+				// starts the desert on the northeast corner of the map
 			} else {
 				desertify(0, 0);
 			}
+			// runs if the mountain range starts on the southern edge of the map
 		} else {
+			// starts the desert on the southeast corner of the map
 			if (sign) {
 				desertify(gridWidth - 1, gridHeight - 1);
+				// starts the desert on the southwest corner of the map
 			} else {
 				desertify(0, gridHeight - 1);
 			}
@@ -153,7 +192,11 @@ public class Map extends JPanel {
 
 	// spreads desert until it reaches mountains
 	private void desertify(int x, int y) {
+		// sets current tile to be desert
 		map[y][x] = DESERT;
+		// checks if adjacent tiles are mountain or desert, and if not,
+		// recursively calls the function to spread desert around the area
+		// enclosed by the mountain range and the map edges
 		if (y > 0) {
 			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != DESERT) {
 				desertify(x, y - 1);
@@ -178,8 +221,10 @@ public class Map extends JPanel {
 
 	// generates forests
 	private void genForests() {
+		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
+				// small chance to start a forest on plains
 				if (map[y][x] == PLAINS && Math.random() < 0.025) {
 					growForest(x, y, (int) (Math.random() * 0.2 * gridWidth) + 1);
 				}
@@ -189,7 +234,11 @@ public class Map extends JPanel {
 
 	// spreads forests
 	private void growForest(int x, int y, int i) {
+		// sets the current tile to be forest
 		map[y][x] = FOREST;
+		// checks if adjacent tiles are plains, and if so, recursively calls the
+		// function to spread forest until i reaches 0, with a chance of
+		// stopping before that to create more irregular shapes
 		if (y > 0) {
 			if (map[y - 1][x] == PLAINS && Math.random() < i * 0.75) {
 				growForest(x, y - 1, i - 1);
@@ -214,8 +263,11 @@ public class Map extends JPanel {
 
 	// generate patches of montain
 	public void genRocks() {
+		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
+				// small chance to place a rock on tiles that aren't water, to
+				// prevent ruining the river
 				if (map[y][x] != WATER && Math.random() < 0.03) {
 					map[y][x] = MOUNTAIN;
 				}
@@ -225,8 +277,11 @@ public class Map extends JPanel {
 
 	// generates lakes
 	private void genLakes() {
+		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
+				// small chance to start a lake in plains or forests, even
+				// smaller chance to start one in the desert
 				if (((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 0.01)
 						|| map[y][x] == DESERT && Math.random() < 0.005) {
 					placeLake(x, y, (int) (Math.random() * 4) + 1);
@@ -237,7 +292,11 @@ public class Map extends JPanel {
 
 	// places a lake
 	private void placeLake(int x, int y, int i) {
+		// sets the current tile to be forest
 		map[y][x] = WATER;
+		// checks if adjacent tiles are water, and if so, recursively calls the
+		// function to spread water until i reaches 0, with a chance of
+		// stopping before that to create more irregular shapes
 		if (y > 0) {
 			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != WATER && Math.random() < i * 0.75) {
 				placeLake(x, y - 1, i - 1);
@@ -265,6 +324,7 @@ public class Map extends JPanel {
 		Graphics2D g2 = (Graphics2D) g;
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
+				//sets color depending on the biome of each tile
 				switch (map[y][x]) {
 				case PLAINS:
 					g2.setColor(new Color(60, 255, 60));
@@ -285,6 +345,7 @@ public class Map extends JPanel {
 					g2.setColor(getBackground());
 					break;
 				}
+				//draws a rectangle to represent each tile
 				g2.fillRect(x * (width / gridWidth), y * (height / gridHeight), (width / gridWidth),
 						(height / gridHeight));
 			}
