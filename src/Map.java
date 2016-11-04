@@ -199,7 +199,7 @@ public class Map extends JPanel {
 			// starts the desert on the northeast corner of the map
 			if (sign) {
 				desertify(gridWidth - 1, 0);
-				// starts the desert on the northeast corner of the map
+				// starts the desert on the northwest corner of the map
 			} else {
 				desertify(0, 0);
 			}
