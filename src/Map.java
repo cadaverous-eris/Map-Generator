@@ -22,7 +22,8 @@ public class Map extends JPanel {
 	private static final int DESERT_SAND = 3;
 	private static final int ROCK = 4;
 	private static final int SAND = 5;
-	private static final int TEMP = 6;
+	private static final int SNOW = 6;
+	private static final int TEMP = 7;
 
 	private static final int NORTH = 0;
 	private static final int WEST = 1;
@@ -64,8 +65,9 @@ public class Map extends JPanel {
 		genLakes();
 		genBeaches();
 		genOases();
+		genIceCaps();
 	}
-	
+
 	// generates mountain range, taking a side of the map to start the range on
 	public void initMountainRange(int side, boolean sign) {
 		// distance on the x axis of the origin from the nearest side of the map
@@ -73,35 +75,36 @@ public class Map extends JPanel {
 		// x and y positions of the origin of the mountain range
 		int x = (sign) ? gridWidth - (xOffset + 1) : xOffset;
 		int y = (side == NORTH) ? 0 : gridHeight - 1;
-		//the side of the y axis of the origin
+		// the side of the y axis of the origin
 		boolean ySign = y > gridHeight / 2;
 		// generates mountains until it reaches an edge of the map
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
-			//places a temporary tile to denote the location of the range
+			// places a temporary tile to denote the location of the range
 			map[y][x] = TEMP;
 			double rand = Math.random();
-			//chance to make the mountain range go north/south
+			// chance to make the mountain range go north/south
 			if (rand < 0.65) {
 				y += (ySign) ? -1 : 1;
-				//chance to make the mountain range go east/west
+				// chance to make the mountain range go east/west
 			} else {
 				x += (sign == rand < 0.92) ? 1 : -1;
 			}
 		}
 	}
-	
-	//completes the generation of the mountain range by spreading rock from all "temp" tiles
+
+	// completes the generation of the mountain range by spreading rock from all
+	// "temp" tiles
 	private void genMountains() {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
 				if (map[y][x] == TEMP) {
-					spreadMountain(x, y, (int) (Math.random()*avgGridDim/16 + avgGridDim/16));
+					spreadMountain(x, y, (int) (Math.random() * avgGridDim / 16 + avgGridDim / 16));
 				}
 			}
 		}
 	}
-	
-	//spreads a mountain from a certain point
+
+	// spreads a mountain from a certain point
 	private void spreadMountain(int x, int y, int i) {
 		if (i < 0) {
 			return;
@@ -380,6 +383,31 @@ public class Map extends JPanel {
 		}
 	}
 
+	// places ice caps on mountain tops
+	private void genIceCaps() {
+		for (int y = 0; y < gridHeight; y++) {
+			for (int x = 0; x < gridWidth; x++) {
+				// if the tile is only adjacent to snow and rock
+				boolean adj = (getAdjacentTile(x, y, NORTH) == SNOW || getAdjacentTile(x, y, NORTH) == ROCK)
+						&& (getAdjacentTile(x, y, WEST) == SNOW || getAdjacentTile(x, y, WEST) == ROCK)
+						&& (getAdjacentTile(x, y, SOUTH) == SNOW || getAdjacentTile(x, y, SOUTH) == ROCK)
+						&& (getAdjacentTile(x, y, EAST) == SNOW || getAdjacentTile(x, y, EAST) == ROCK);
+				// if the tiles corner neighbors are all rock or snow
+				boolean cor = (getCornerTile(x, y, NORTH) == SNOW || getCornerTile(x, y, NORTH) == ROCK)
+						&& (getCornerTile(x, y, WEST) == SNOW || getCornerTile(x, y, WEST) == ROCK)
+						&& (getCornerTile(x, y, SOUTH) == SNOW || getCornerTile(x, y, SOUTH) == ROCK)
+						&& (getCornerTile(x, y, EAST) == SNOW || getCornerTile(x, y, EAST) == ROCK);
+				// chance to place sand on tiles that are next
+				// to water
+				if ((map[y][x] == ROCK) && adj && cor && Math.random() < 0.5) {
+					map[y][x] = SNOW;
+				}
+			}
+		}
+	}
+
+	// returns the value of the tile adjacent to the given tile in the given
+	// direction
 	private int getAdjacentTile(int x, int y, int direction) {
 		if (direction == NORTH && y > 0) {
 			return map[y - 1][x];
@@ -392,7 +420,22 @@ public class Map extends JPanel {
 		} else {
 			return map[y][x];
 		}
+	}
 
+	// returns the value of the tile at the corner of the given tile in the
+	// given direction
+	private int getCornerTile(int x, int y, int direction) {
+		if (direction == NORTH && y > 0 && x < gridWidth - 1) {
+			return map[y - 1][x + 1];
+		} else if (direction == EAST && x < gridWidth - 1 && y < gridHeight - 1) {
+			return map[y + 1][x + 1];
+		} else if (direction == SOUTH && y < gridHeight - 1 && x > 0) {
+			return map[y + 1][x - 1];
+		} else if (direction == WEST && x > 0 && y > 0) {
+			return map[y - 1][x - 1];
+		} else {
+			return map[y][x];
+		}
 	}
 
 	// updates the size of the JPanel
@@ -429,6 +472,9 @@ public class Map extends JPanel {
 					break;
 				case SAND:
 					g2.setColor(new Color(255, 240, 160));
+					break;
+				case SNOW:
+					g2.setColor(new Color(240, 240, 240));
 					break;
 				default:
 					g2.setColor(getBackground());
