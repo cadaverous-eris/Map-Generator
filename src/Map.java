@@ -11,6 +11,8 @@ public class Map extends JPanel {
 	private int width, height;
 	// width and height of the actual map grid
 	private int gridWidth, gridHeight;
+	// average of grid width and height
+	private int avgGridDim;
 	// the actual map grid
 	private int[][] map;
 
@@ -30,6 +32,7 @@ public class Map extends JPanel {
 		this.height = height;
 		this.gridWidth = gridWidth;
 		this.gridHeight = gridHeight;
+		this.avgGridDim = (gridWidth + gridHeight) / 2;
 		this.map = new int[gridHeight][gridWidth];
 		// set preferred size of the JPanel
 		setPreferredSize(new Dimension(width, height));
@@ -136,7 +139,7 @@ public class Map extends JPanel {
 			// sets initial x to the side of the map opposite the mountain range
 			x = (sign) ? 0 : gridWidth - 1;
 			// sets the initial y near one of the corners of the map
-			int yOffset = (int) (Math.random() * 0.3 * gridWidth);
+			int yOffset = (int) (Math.random() * 0.3 * gridHeight);
 			y = (Math.random() < 0.5) ? yOffset : gridHeight - (yOffset + 1);
 		}
 		// the location of the river origin on the x axis. true is on the east,
@@ -227,7 +230,7 @@ public class Map extends JPanel {
 			for (int x = 0; x < gridWidth; x++) {
 				// small chance to start a forest on plains
 				if (map[y][x] == PLAINS && Math.random() < 0.025) {
-					growForest(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.4)) + 1);
+					growForest(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.4)) + 1);
 				}
 			}
 		}
@@ -285,10 +288,10 @@ public class Map extends JPanel {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
 				// small chance to start a lake in plains or forests or deserts
-				if ((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 3 * Math.pow(gridWidth, -1.6)) {
-					placeLake(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.3)) + 1);
-				} else if (map[y][x] == DESERT && Math.random() < 3 * Math.pow(gridWidth, -1.6)) {
-					placeLake(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.2)) + 1);
+				if ((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
+					placeLake(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.3)) + 1);
+				} else if (map[y][x] == DESERT && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
+					placeLake(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.2)) + 1);
 				}
 			}
 		}
