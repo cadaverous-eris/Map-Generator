@@ -483,8 +483,12 @@ public class Map extends JPanel {
 				// draws a rectangle to represent each tile
 				g2.fillRect(xOffset + (x * tileSize), yOffset + (y * tileSize), tileSize, tileSize);
 			}
-		}
-
+		}	
+		g2.setColor(Color.black);
+		g2.fillRect(0, 0, getWidth(), yOffset);
+		g2.fillRect(0, getHeight()-yOffset, xOffset, yOffset);
+		g2.fillRect(0, yOffset, xOffset, getHeight()-(yOffset*2));
+		g2.fillRect(getWidth()-xOffset, yOffset, xOffset, getHeight()-(yOffset*2));
 	}
 
 }
