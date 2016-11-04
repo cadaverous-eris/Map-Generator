@@ -361,8 +361,18 @@ public class Map extends JPanel {
 
 	}
 
+	//updates the size of the JPanel
+	public void updateSize() {
+		this.width = getWidth();
+		this.height = getHeight();
+	}
+
 	// renders the map
 	public void draw(Graphics g) {
+		updateSize();
+		int tileSize = Math.min(width / gridWidth, height / gridHeight);
+		int xOffset = (width - (tileSize * gridWidth)) / 2;
+		int yOffset = (height - (tileSize * gridHeight)) / 2;
 		Graphics2D g2 = (Graphics2D) g;
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
@@ -388,8 +398,7 @@ public class Map extends JPanel {
 					break;
 				}
 				// draws a rectangle to represent each tile
-				g2.fillRect(x * (width / gridWidth), y * (height / gridHeight), (width / gridWidth),
-						(height / gridHeight));
+				g2.fillRect(xOffset + (x * tileSize), yOffset + (y * tileSize), tileSize, tileSize);
 			}
 		}
 
