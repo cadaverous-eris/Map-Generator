@@ -56,6 +56,7 @@ public class Map extends JPanel {
 		genRiver(mountainGenSign);
 		genRocks();
 		genLakes();
+		genOases();
 	}
 
 	// generates mountain range, taking a side of the map to start the range on
@@ -226,7 +227,7 @@ public class Map extends JPanel {
 			for (int x = 0; x < gridWidth; x++) {
 				// small chance to start a forest on plains
 				if (map[y][x] == PLAINS && Math.random() < 0.025) {
-					growForest(x, y, (int) (Math.random() * 0.2 * gridWidth) + 1);
+					growForest(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.4)) + 1);
 				}
 			}
 		}
@@ -280,11 +281,11 @@ public class Map extends JPanel {
 		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
-				// small chance to start a lake in plains or forests, even
-				// smaller chance to start one in the desert
-				if (((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 0.01)
-						|| map[y][x] == DESERT && Math.random() < 0.005) {
-					placeLake(x, y, (int) (Math.random() * 4) + 1);
+				// small chance to start a lake in plains or forests or deserts
+				if ((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 3 * Math.pow(gridWidth, -1.6)) {
+					placeLake(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.3)) + 1);
+				} else if (map[y][x] == DESERT && Math.random() < 3 * Math.pow(gridWidth, -1.6)) {
+					placeLake(x, y, (int) (Math.random() * Math.pow(gridWidth, 0.2)) + 1);
 				}
 			}
 		}
@@ -319,12 +320,44 @@ public class Map extends JPanel {
 		}
 	}
 
+	// generate oases nest to water in the desert
+	private void genOases() {
+		// cycles through all tiles
+		for (int y = 0; y < gridHeight; y++) {
+			for (int x = 0; x < gridWidth; x++) {
+				// if the tile is adjacent to water
+				boolean adj = getAdjacentTile(x, y, 0) == WATER || getAdjacentTile(x, y, 1) == WATER
+						|| getAdjacentTile(x, y, 2) == WATER || getAdjacentTile(x, y, 3) == WATER;
+				// small chance to place plains or forest on tiles that are next
+				// to water
+				if (map[y][x] == DESERT && adj && Math.random() < 0.7) {
+					map[y][x] = (Math.random() < 0.4) ? PLAINS : FOREST;
+				}
+			}
+		}
+	}
+
+	private int getAdjacentTile(int x, int y, int direction) {
+		if (direction == 0 && y > 0) {
+			return map[y - 1][x];
+		} else if (direction == 1 && x < gridWidth - 1) {
+			return map[y][x + 1];
+		} else if (direction == 2 && y < gridHeight - 1) {
+			return map[y + 1][x];
+		} else if (direction == 3 && x > 0) {
+			return map[y][x - 1];
+		} else {
+			return map[y][x];
+		}
+
+	}
+
 	// renders the map
 	public void draw(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
-				//sets color depending on the biome of each tile
+				// sets color depending on the biome of each tile
 				switch (map[y][x]) {
 				case PLAINS:
 					g2.setColor(new Color(60, 255, 60));
@@ -345,7 +378,7 @@ public class Map extends JPanel {
 					g2.setColor(getBackground());
 					break;
 				}
-				//draws a rectangle to represent each tile
+				// draws a rectangle to represent each tile
 				g2.fillRect(x * (width / gridWidth), y * (height / gridHeight), (width / gridWidth),
 						(height / gridHeight));
 			}
