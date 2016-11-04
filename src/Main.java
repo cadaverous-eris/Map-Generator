@@ -4,7 +4,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Map");
-		Map map = new Map(800, 800, 32, 32);
+		Map map = new Map(512, 512, 32, 32);
 		frame.setResizable(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);

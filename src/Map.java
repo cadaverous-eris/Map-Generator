@@ -55,7 +55,9 @@ public class Map extends JPanel {
 		initMap();
 		int mountainInitSide = (Math.random() < 0.5) ? NORTH : SOUTH;
 		boolean mountainGenSign = (Math.random() > 0.5) ? true : false;
-		genMountains(mountainInitSide, mountainGenSign);
+		initMountainRange(mountainInitSide, mountainGenSign);
+		genDesert(mountainInitSide, mountainGenSign);
+		genMountains();
 		genForests();
 		genRiver(mountainGenSign);
 		genRocks();
@@ -65,7 +67,7 @@ public class Map extends JPanel {
 	}
 	
 	// generates mountain range, taking a side of the map to start the range on
-	public void genMountains(int side, boolean sign) {
+	public void initMountainRange(int side, boolean sign) {
 		// distance on the x axis of the origin from the nearest side of the map
 		int xOffset = (int) ((Math.random() * 0.15 * gridWidth) + (0.25 * gridWidth));
 		// x and y positions of the origin of the mountain range
@@ -86,20 +88,21 @@ public class Map extends JPanel {
 				x += (sign == rand < 0.92) ? 1 : -1;
 			}
 		}
-		//generates the desert before spreading mountains to make sure all the area between the map edge and the mountain range is converted to desert
-		genDesert(side, sign);
-		//spreads the mountain range at all "temporary" tiles, which marked out the mountain range
-		for (int yi = 0; yi < gridHeight; yi++) {
-			for (int xi = 0; xi < gridWidth; xi++) {
-				if (map[yi][xi] == TEMP) {
-					spreadMountain(xi, yi, (int) (Math.random()*avgGridDim/16 + avgGridDim/16));
+	}
+	
+	//completes the generation of the mountain range by spreading rock from all "temp" tiles
+	private void genMountains() {
+		for (int y = 0; y < gridHeight; y++) {
+			for (int x = 0; x < gridWidth; x++) {
+				if (map[y][x] == TEMP) {
+					spreadMountain(x, y, (int) (Math.random()*avgGridDim/16 + avgGridDim/16));
 				}
 			}
 		}
 	}
 	
 	//spreads a mountain from a certain point
-	public void spreadMountain(int x, int y, int i) {
+	private void spreadMountain(int x, int y, int i) {
 		if (i < 0) {
 			return;
 		}
