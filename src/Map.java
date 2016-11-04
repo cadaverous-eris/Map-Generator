@@ -16,11 +16,12 @@ public class Map extends JPanel {
 	// the actual map grid
 	private int[][] map;
 
-	private static final int PLAINS = 0;
-	private static final int FOREST = 1;
+	private static final int GRASS = 0;
+	private static final int TREES = 1;
 	private static final int WATER = 2;
-	private static final int DESERT = 3;
-	private static final int MOUNTAIN = 4;
+	private static final int DESERT_SAND = 3;
+	private static final int ROCK = 4;
+	private static final int SAND = 5;
 
 	private static final int NORTH = 0;
 	private static final int EAST = 1;
@@ -43,7 +44,7 @@ public class Map extends JPanel {
 	private void initMap() {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
-				map[y][x] = PLAINS;
+				map[y][x] = GRASS;
 			}
 		}
 	}
@@ -59,6 +60,7 @@ public class Map extends JPanel {
 		genRiver(mountainGenSign);
 		genRocks();
 		genLakes();
+		genBeaches();
 		genOases();
 	}
 
@@ -73,19 +75,19 @@ public class Map extends JPanel {
 		int i = 0;
 		// generates mountains until it reaches an edge of the map
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
-			map[y][x] = MOUNTAIN;
+			map[y][x] = ROCK;
 			// chance to place mountains around the currently selected tile
 			if (x < gridWidth - 1 && Math.random() < 0.7) {
-				map[y][x + 1] = MOUNTAIN;
+				map[y][x + 1] = ROCK;
 			}
 			if (x > 0 && Math.random() < 0.7) {
-				map[y][x - 1] = MOUNTAIN;
+				map[y][x - 1] = ROCK;
 			}
 			if (y < gridHeight - 1 && Math.random() < 0.7) {
-				map[y + 1][x] = MOUNTAIN;
+				map[y + 1][x] = ROCK;
 			}
 			if (y > 0 && Math.random() < 0.7) {
-				map[y - 1][x] = MOUNTAIN;
+				map[y - 1][x] = ROCK;
 			}
 			// gives a high probability for the mountain range to go
 			// north/south, which decreases over time
@@ -197,27 +199,27 @@ public class Map extends JPanel {
 	// spreads desert until it reaches mountains
 	private void desertify(int x, int y) {
 		// sets current tile to be desert
-		map[y][x] = DESERT;
+		map[y][x] = DESERT_SAND;
 		// checks if adjacent tiles are mountain or desert, and if not,
 		// recursively calls the function to spread desert around the area
 		// enclosed by the mountain range and the map edges
 		if (y > 0) {
-			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != DESERT) {
+			if (map[y - 1][x] != ROCK && map[y - 1][x] != DESERT_SAND) {
 				desertify(x, y - 1);
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] != MOUNTAIN && map[y][x - 1] != DESERT) {
+			if (map[y][x - 1] != ROCK && map[y][x - 1] != DESERT_SAND) {
 				desertify(x - 1, y);
 			}
 		}
 		if (y < gridHeight - 1) {
-			if (map[y + 1][x] != MOUNTAIN && map[y + 1][x] != DESERT) {
+			if (map[y + 1][x] != ROCK && map[y + 1][x] != DESERT_SAND) {
 				desertify(x, y + 1);
 			}
 		}
 		if (x < gridWidth - 1) {
-			if (map[y][x + 1] != MOUNTAIN && map[y][x + 1] != DESERT) {
+			if (map[y][x + 1] != ROCK && map[y][x + 1] != DESERT_SAND) {
 				desertify(x + 1, y);
 			}
 		}
@@ -229,7 +231,7 @@ public class Map extends JPanel {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
 				// small chance to start a forest on plains
-				if (map[y][x] == PLAINS && Math.random() < 0.025) {
+				if (map[y][x] == GRASS && Math.random() < 0.025) {
 					growForest(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.4)) + 1);
 				}
 			}
@@ -242,27 +244,27 @@ public class Map extends JPanel {
 			return;
 		}
 		// sets the current tile to be forest
-		map[y][x] = FOREST;
+		map[y][x] = TREES;
 		// checks if adjacent tiles are plains, and if so, recursively calls the
 		// function to spread forest until i reaches 0, with a chance of
 		// stopping before that to create more irregular shapes
 		if (y > 0) {
-			if (map[y - 1][x] == PLAINS && Math.random() < i * 0.75) {
+			if (map[y - 1][x] == GRASS && Math.random() < i * 0.75) {
 				growForest(x, y - 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] == PLAINS && Math.random() < i * 0.75) {
+			if (map[y][x - 1] == GRASS && Math.random() < i * 0.75) {
 				growForest(x - 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (y < gridHeight - 1) {
-			if (map[y + 1][x] == PLAINS && Math.random() < i * 0.75) {
+			if (map[y + 1][x] == GRASS && Math.random() < i * 0.75) {
 				growForest(x, y + 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x < gridWidth - 1) {
-			if (map[y][x + 1] == PLAINS && Math.random() < i * 0.75) {
+			if (map[y][x + 1] == GRASS && Math.random() < i * 0.75) {
 				growForest(x + 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
@@ -276,7 +278,7 @@ public class Map extends JPanel {
 				// small chance to place a rock on tiles that aren't water, to
 				// prevent ruining the river
 				if (map[y][x] != WATER && Math.random() < 0.03) {
-					map[y][x] = MOUNTAIN;
+					map[y][x] = ROCK;
 				}
 			}
 		}
@@ -288,9 +290,9 @@ public class Map extends JPanel {
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
 				// small chance to start a lake in plains or forests or deserts
-				if ((map[y][x] == PLAINS || map[y][x] == FOREST) && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
+				if ((map[y][x] == GRASS || map[y][x] == TREES) && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
 					placeLake(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.3)) + 1);
-				} else if (map[y][x] == DESERT && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
+				} else if (map[y][x] == DESERT_SAND && Math.random() < 3 * Math.pow(avgGridDim, -1.6)) {
 					placeLake(x, y, (int) (Math.random() * Math.pow(avgGridDim, 0.2)) + 1);
 				}
 			}
@@ -308,22 +310,22 @@ public class Map extends JPanel {
 		// function to spread water until i reaches 0, with a chance of
 		// stopping before that to create more irregular shapes
 		if (y > 0) {
-			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != WATER && Math.random() < i * 0.75) {
+			if (map[y - 1][x] != ROCK && map[y - 1][x] != WATER && Math.random() < i * 0.75) {
 				placeLake(x, y - 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] != MOUNTAIN && map[y][x - 1] != WATER && Math.random() < i * 0.75) {
+			if (map[y][x - 1] != ROCK && map[y][x - 1] != WATER && Math.random() < i * 0.75) {
 				placeLake(x - 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (y < gridHeight - 1) {
-			if (map[y + 1][x] != MOUNTAIN && map[y + 1][x] != WATER && Math.random() < i * 0.75) {
+			if (map[y + 1][x] != ROCK && map[y + 1][x] != WATER && Math.random() < i * 0.75) {
 				placeLake(x, y + 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x < gridWidth - 1) {
-			if (map[y][x + 1] != MOUNTAIN && map[y][x + 1] != WATER && Math.random() < i * 0.75) {
+			if (map[y][x + 1] != ROCK && map[y][x + 1] != WATER && Math.random() < i * 0.75) {
 				placeLake(x + 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
@@ -339,8 +341,25 @@ public class Map extends JPanel {
 						|| getAdjacentTile(x, y, 2) == WATER || getAdjacentTile(x, y, 3) == WATER;
 				// small chance to place plains or forest on tiles that are next
 				// to water
-				if (map[y][x] == DESERT && adj && Math.random() < 0.7) {
-					map[y][x] = (Math.random() < 0.4) ? PLAINS : FOREST;
+				if (map[y][x] == DESERT_SAND && adj && Math.random() < 0.7) {
+					map[y][x] = (Math.random() < 0.4) ? GRASS : TREES;
+				}
+			}
+		}
+	}
+
+	// places sand next to water
+	private void genBeaches() {
+		// cycles through all tiles
+		for (int y = 0; y < gridHeight; y++) {
+			for (int x = 0; x < gridWidth; x++) {
+				// if the tile is adjacent to water
+				boolean adj = getAdjacentTile(x, y, 0) == WATER || getAdjacentTile(x, y, 1) == WATER
+						|| getAdjacentTile(x, y, 2) == WATER || getAdjacentTile(x, y, 3) == WATER;
+				// chance to place sand on tiles that are next
+				// to water
+				if ((map[y][x] == GRASS || map[y][x] == TREES) && adj && Math.random() < 0.6) {
+					map[y][x] = SAND;
 				}
 			}
 		}
@@ -361,7 +380,7 @@ public class Map extends JPanel {
 
 	}
 
-	//updates the size of the JPanel
+	// updates the size of the JPanel
 	public void updateSize() {
 		this.width = getWidth();
 		this.height = getHeight();
@@ -378,20 +397,23 @@ public class Map extends JPanel {
 			for (int x = 0; x < gridWidth; x++) {
 				// sets color depending on the biome of each tile
 				switch (map[y][x]) {
-				case PLAINS:
+				case GRASS:
 					g2.setColor(new Color(60, 255, 60));
 					break;
-				case FOREST:
+				case TREES:
 					g2.setColor(new Color(20, 120, 20));
 					break;
 				case WATER:
 					g2.setColor(new Color(0, 200, 255));
 					break;
-				case DESERT:
+				case DESERT_SAND:
 					g2.setColor(new Color(230, 230, 150));
 					break;
-				case MOUNTAIN:
+				case ROCK:
 					g2.setColor(new Color(120, 120, 120));
+					break;
+				case SAND:
+					g2.setColor(new Color(255, 240, 160));
 					break;
 				default:
 					g2.setColor(getBackground());
