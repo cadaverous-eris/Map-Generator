@@ -61,15 +61,16 @@ public class Map extends JPanel {
 		genMountains();
 		genForests();
 		genRiver(mountainGenSign);
-		genRocks();
 		genLakes();
+		genSpring();
+		genRocks();
 		genBeaches();
 		genOases();
 		genIceCaps();
 	}
 
 	// generates mountain range, taking a side of the map to start the range on
-	public void initMountainRange(int side, boolean sign) {
+	private void initMountainRange(int side, boolean sign) {
 		// distance on the x axis of the origin from the nearest side of the map
 		int xOffset = (int) ((Math.random() * 0.15 * gridWidth) + (0.25 * gridWidth));
 		// x and y positions of the origin of the mountain range
@@ -288,8 +289,8 @@ public class Map extends JPanel {
 		}
 	}
 
-	// generate patches of montain
-	public void genRocks() {
+	// generate patches of mountain
+	private void genRocks() {
 		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
@@ -385,6 +386,7 @@ public class Map extends JPanel {
 
 	// places ice caps on mountain tops
 	private void genIceCaps() {
+		// cycles through all tiles
 		for (int y = 0; y < gridHeight; y++) {
 			for (int x = 0; x < gridWidth; x++) {
 				// if the tile is only adjacent to snow and rock
@@ -397,10 +399,62 @@ public class Map extends JPanel {
 						&& (getCornerTile(x, y, WEST) == SNOW || getCornerTile(x, y, WEST) == ROCK)
 						&& (getCornerTile(x, y, SOUTH) == SNOW || getCornerTile(x, y, SOUTH) == ROCK)
 						&& (getCornerTile(x, y, EAST) == SNOW || getCornerTile(x, y, EAST) == ROCK);
-				// chance to place sand on tiles that are next
-				// to water
+				// chance to place snow on tiles that are only neighboring
+				// rock and snow
 				if ((map[y][x] == ROCK) && adj && cor && Math.random() < 0.5) {
 					map[y][x] = SNOW;
+				}
+			}
+		}
+	}
+
+	// has a chance to create rivers flowing from the mountain range
+	private void genSpring() {
+		// cycles through all tiles
+		for (int y = 0; y < gridHeight; y++) {
+			for (int x = 0; x < gridWidth; x++) {
+				// if the tile is only adjacent to snow and rock
+				boolean adj = (getAdjacentTile(x, y, NORTH) == SNOW || getAdjacentTile(x, y, NORTH) == ROCK)
+						&& (getAdjacentTile(x, y, WEST) == SNOW || getAdjacentTile(x, y, WEST) == ROCK)
+						&& (getAdjacentTile(x, y, SOUTH) == SNOW || getAdjacentTile(x, y, SOUTH) == ROCK)
+						&& (getAdjacentTile(x, y, EAST) == SNOW || getAdjacentTile(x, y, EAST) == ROCK);
+				// if the tiles corner neighbors are all rock or snow
+				boolean cor = (getCornerTile(x, y, NORTH) == SNOW || getCornerTile(x, y, NORTH) == ROCK)
+						&& (getCornerTile(x, y, WEST) == SNOW || getCornerTile(x, y, WEST) == ROCK)
+						&& (getCornerTile(x, y, SOUTH) == SNOW || getCornerTile(x, y, SOUTH) == ROCK)
+						&& (getCornerTile(x, y, EAST) == SNOW || getCornerTile(x, y, EAST) == ROCK);
+				// chance to start a river on a tile that is snow or rock
+				if ((map[y][x] == ROCK || map[y][x] == SNOW) && adj && cor && Math.random() < 0.3 / avgGridDim) {
+					carveRiver(x, y);
+				}
+			}
+		}
+	}
+
+	private void carveRiver(int x, int y) {
+		boolean flip = (Math.random() < 0.2);
+		// the location of the river origin on the x axis. true is on the east,
+		// false is on the west
+		boolean xSign = x > gridWidth / 2;
+		// generates the river by changing the current x and y positions and
+		// setting them to be "temp" tiles so it can differentiate between when
+		// it runs into itself and when it runs into a lake or river
+		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0 && map[y][x] != WATER) {
+			map[y][x] = TEMP;
+			// 40% chance to make the river go north/south
+			if (Math.random() < 0.4) {
+				// greater chance for the river to flow south
+				y += (Math.random() < 0.25) ? -1 : 1;
+				// 60% chance to make the river go east/west
+			} else {
+				x += (xSign != flip) ? -1 : 1;
+			}
+		}
+		// replaces all "temp" tiles with water
+		for (int yi = 0; yi < gridHeight; yi++) {
+			for (int xi = 0; xi < gridWidth; xi++) {
+				if (map[yi][xi] == TEMP) {
+					map[yi][xi] = WATER;
 				}
 			}
 		}
@@ -483,12 +537,12 @@ public class Map extends JPanel {
 				// draws a rectangle to represent each tile
 				g2.fillRect(xOffset + (x * tileSize), yOffset + (y * tileSize), tileSize, tileSize);
 			}
-		}	
+		}
 		g2.setColor(Color.black);
 		g2.fillRect(0, 0, getWidth(), yOffset);
-		g2.fillRect(0, getHeight()-yOffset, xOffset, yOffset);
-		g2.fillRect(0, yOffset, xOffset, getHeight()-(yOffset*2));
-		g2.fillRect(getWidth()-xOffset, yOffset, xOffset, getHeight()-(yOffset*2));
+		g2.fillRect(0, getHeight() - yOffset, xOffset, yOffset);
+		g2.fillRect(0, yOffset, xOffset, getHeight() - (yOffset * 2));
+		g2.fillRect(getWidth() - xOffset, yOffset, xOffset, getHeight() - (yOffset * 2));
 	}
 
 }
