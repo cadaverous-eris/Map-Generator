@@ -22,11 +22,12 @@ public class Map extends JPanel {
 	private static final int DESERT_SAND = 3;
 	private static final int ROCK = 4;
 	private static final int SAND = 5;
+	private static final int TEMP = 6;
 
 	private static final int NORTH = 0;
-	private static final int EAST = 1;
+	private static final int WEST = 1;
 	private static final int SOUTH = 2;
-	private static final int WEST = 2;
+	private static final int EAST = 3;
 
 	public Map(int width, int height, int gridWidth, int gridHeight) {
 		this.width = width;
@@ -52,10 +53,9 @@ public class Map extends JPanel {
 	// generates the map
 	public void genMap() {
 		initMap();
-		int mountainInitSide = (Math.random() < 0.5) ? 0 : 1;
+		int mountainInitSide = (Math.random() < 0.5) ? NORTH : SOUTH;
 		boolean mountainGenSign = (Math.random() > 0.5) ? true : false;
 		genMountains(mountainInitSide, mountainGenSign);
-		genDesert(mountainInitSide, mountainGenSign);
 		genForests();
 		genRiver(mountainGenSign);
 		genRocks();
@@ -63,58 +63,70 @@ public class Map extends JPanel {
 		genBeaches();
 		genOases();
 	}
-
+	
 	// generates mountain range, taking a side of the map to start the range on
-	private void genMountains(int side, boolean sign) {
-		// distance from the nearest side of the map on the x axis
+	public void genMountains(int side, boolean sign) {
+		// distance on the x axis of the origin from the nearest side of the map
 		int xOffset = (int) ((Math.random() * 0.15 * gridWidth) + (0.25 * gridWidth));
 		// x and y positions of the origin of the mountain range
 		int x = (sign) ? gridWidth - (xOffset + 1) : xOffset;
-		int y = (side == 0) ? 0 : gridHeight - 1;
-		// # of times the loop has run
-		int i = 0;
+		int y = (side == NORTH) ? 0 : gridHeight - 1;
+		//the side of the y axis of the origin
+		boolean ySign = y > gridHeight / 2;
 		// generates mountains until it reaches an edge of the map
 		while (x < gridWidth && x >= 0 && y < gridHeight && y >= 0) {
-			map[y][x] = ROCK;
-			// chance to place mountains around the currently selected tile
-			if (x < gridWidth - 1 && Math.random() < 0.7) {
-				map[y][x + 1] = ROCK;
-			}
-			if (x > 0 && Math.random() < 0.7) {
-				map[y][x - 1] = ROCK;
-			}
-			if (y < gridHeight - 1 && Math.random() < 0.7) {
-				map[y + 1][x] = ROCK;
-			}
-			if (y > 0 && Math.random() < 0.7) {
-				map[y - 1][x] = ROCK;
-			}
-			// gives a high probability for the mountain range to go
-			// north/south, which decreases over time
-			if (Math.random() < Math.pow(0.9, i / 2)) {
-				if (side == 0) {
-					y += 1;
-				} else {
-					y -= 1;
-				}
-				// gives a high probability for the mountain range to go east,
-				// which decreases over time
-			} else if (Math.random() < 1 - Math.pow(0.2, i)) {
-				if (sign) {
-					x += 1;
-				} else {
-					x -= 1;
-				}
-				// a small, but increasing chance for the mountain range to go
-				// back toward the closest side on the x axis to it's origin
+			//places a temporary tile to denote the location of the range
+			map[y][x] = TEMP;
+			double rand = Math.random();
+			//chance to make the mountain range go north/south
+			if (rand < 0.65) {
+				y += (ySign) ? -1 : 1;
+				//chance to make the mountain range go east/west
 			} else {
-				if (!sign) {
-					x += 1;
-				} else {
-					x -= 1;
+				x += (sign == rand < 0.92) ? 1 : -1;
+			}
+		}
+		//generates the desert before spreading mountains to make sure all the area between the map edge and the mountain range is converted to desert
+		genDesert(side, sign);
+		//spreads the mountain range at all "temporary" tiles, which marked out the mountain range
+		for (int yi = 0; yi < gridHeight; yi++) {
+			for (int xi = 0; xi < gridWidth; xi++) {
+				if (map[yi][xi] == TEMP) {
+					spreadMountain(xi, yi, (int) (Math.random()*avgGridDim/16 + avgGridDim/16));
 				}
 			}
-			i++;
+		}
+	}
+	
+	//spreads a mountain from a certain point
+	public void spreadMountain(int x, int y, int i) {
+		if (i < 0) {
+			return;
+		}
+		// sets the current tile to be forest
+		map[y][x] = ROCK;
+		// checks if adjacent tiles are plains, and if so, recursively calls the
+		// function to spread mountain until i reaches 0, with a chance of
+		// stopping before that to create more irregular shapes
+		if (y > 0) {
+			if ((map[y - 1][x] == GRASS || map[y - 1][x] == DESERT_SAND) && Math.random() < i * 0.75) {
+				spreadMountain(x, y - 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
+			}
+		}
+		if (x > 0) {
+			if ((map[y][x - 1] == GRASS || map[y][x - 1] == DESERT_SAND) && Math.random() < i * 0.75) {
+				spreadMountain(x - 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
+			}
+		}
+		if (y < gridHeight - 1) {
+			if ((map[y + 1][x] == GRASS || map[y + 1][x] == DESERT_SAND) && Math.random() < i * 0.75) {
+				spreadMountain(x, y + 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
+			}
+		}
+		if (x < gridWidth - 1) {
+			if ((map[y][x + 1] == GRASS || map[y][x + 1] == DESERT_SAND) && Math.random() < i * 0.75) {
+				spreadMountain(x + 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
+			}
 		}
 	}
 
@@ -125,7 +137,7 @@ public class Map extends JPanel {
 		int y;
 		// 30% chance for river to start at the top or bottom of the map
 		if (Math.random() < 0.3) {
-			// equal chances of the river starting at thetop or bottom
+			// equal chances of the river starting at the top or bottom
 			if (Math.random() < 0.5) {
 				y = 0;
 			} else {
@@ -176,7 +188,7 @@ public class Map extends JPanel {
 	// generates the desert next to the mountains
 	private void genDesert(int side, boolean sign) {
 		// checks if the mountain range starts on the northern edge of the map
-		if (side == 0) {
+		if (side == NORTH) {
 			// starts the desert on the northeast corner of the map
 			if (sign) {
 				desertify(gridWidth - 1, 0);
@@ -204,22 +216,22 @@ public class Map extends JPanel {
 		// recursively calls the function to spread desert around the area
 		// enclosed by the mountain range and the map edges
 		if (y > 0) {
-			if (map[y - 1][x] != ROCK && map[y - 1][x] != DESERT_SAND) {
+			if (map[y - 1][x] != TEMP && map[y - 1][x] != DESERT_SAND) {
 				desertify(x, y - 1);
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] != ROCK && map[y][x - 1] != DESERT_SAND) {
+			if (map[y][x - 1] != TEMP && map[y][x - 1] != DESERT_SAND) {
 				desertify(x - 1, y);
 			}
 		}
 		if (y < gridHeight - 1) {
-			if (map[y + 1][x] != ROCK && map[y + 1][x] != DESERT_SAND) {
+			if (map[y + 1][x] != TEMP && map[y + 1][x] != DESERT_SAND) {
 				desertify(x, y + 1);
 			}
 		}
 		if (x < gridWidth - 1) {
-			if (map[y][x + 1] != ROCK && map[y][x + 1] != DESERT_SAND) {
+			if (map[y][x + 1] != TEMP && map[y][x + 1] != DESERT_SAND) {
 				desertify(x + 1, y);
 			}
 		}
@@ -366,13 +378,13 @@ public class Map extends JPanel {
 	}
 
 	private int getAdjacentTile(int x, int y, int direction) {
-		if (direction == 0 && y > 0) {
+		if (direction == NORTH && y > 0) {
 			return map[y - 1][x];
-		} else if (direction == 1 && x < gridWidth - 1) {
+		} else if (direction == WEST && x < gridWidth - 1) {
 			return map[y][x + 1];
-		} else if (direction == 2 && y < gridHeight - 1) {
+		} else if (direction == SOUTH && y < gridHeight - 1) {
 			return map[y + 1][x];
-		} else if (direction == 3 && x > 0) {
+		} else if (direction == EAST && x > 0) {
 			return map[y][x - 1];
 		} else {
 			return map[y][x];
