@@ -235,6 +235,9 @@ public class Map extends JPanel {
 
 	// spreads forests
 	private void growForest(int x, int y, int i) {
+		if (i < 0) {
+			return;
+		}
 		// sets the current tile to be forest
 		map[y][x] = FOREST;
 		// checks if adjacent tiles are plains, and if so, recursively calls the
@@ -242,22 +245,22 @@ public class Map extends JPanel {
 		// stopping before that to create more irregular shapes
 		if (y > 0) {
 			if (map[y - 1][x] == PLAINS && Math.random() < i * 0.75) {
-				growForest(x, y - 1, i - 1);
+				growForest(x, y - 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x > 0) {
 			if (map[y][x - 1] == PLAINS && Math.random() < i * 0.75) {
-				growForest(x - 1, y, i - 1);
+				growForest(x - 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (y < gridHeight - 1) {
 			if (map[y + 1][x] == PLAINS && Math.random() < i * 0.75) {
-				growForest(x, y + 1, i - 1);
+				growForest(x, y + 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x < gridWidth - 1) {
 			if (map[y][x + 1] == PLAINS && Math.random() < i * 0.75) {
-				growForest(x + 1, y, i - 1);
+				growForest(x + 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 	}
@@ -293,6 +296,9 @@ public class Map extends JPanel {
 
 	// places a lake
 	private void placeLake(int x, int y, int i) {
+		if (i < 0) {
+			return;
+		}
 		// sets the current tile to be forest
 		map[y][x] = WATER;
 		// checks if adjacent tiles are water, and if so, recursively calls the
@@ -300,22 +306,22 @@ public class Map extends JPanel {
 		// stopping before that to create more irregular shapes
 		if (y > 0) {
 			if (map[y - 1][x] != MOUNTAIN && map[y - 1][x] != WATER && Math.random() < i * 0.75) {
-				placeLake(x, y - 1, i - 1);
+				placeLake(x, y - 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x > 0) {
 			if (map[y][x - 1] != MOUNTAIN && map[y][x - 1] != WATER && Math.random() < i * 0.75) {
-				placeLake(x - 1, y, i - 1);
+				placeLake(x - 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (y < gridHeight - 1) {
 			if (map[y + 1][x] != MOUNTAIN && map[y + 1][x] != WATER && Math.random() < i * 0.75) {
-				placeLake(x, y + 1, i - 1);
+				placeLake(x, y + 1, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 		if (x < gridWidth - 1) {
 			if (map[y][x + 1] != MOUNTAIN && map[y][x + 1] != WATER && Math.random() < i * 0.75) {
-				placeLake(x + 1, y, i - 1);
+				placeLake(x + 1, y, i - ((Math.random() < 0.65) ? 1 : (Math.random() < 0.6) ? 2 : 0));
 			}
 		}
 	}
